@@ -26,7 +26,7 @@ import time
 # Path to phantomJS executable to use it with selenium webdriver.
 PHANTOMJS_LOC = r'D:\Soft\phantomjs-2.1.1-windows\bin\phantomjs'
 # List with exceptions (words that seem to qualify as code sometimes, but they are not).
-EXCEPTIONS = ['SPORTSNET', 'CODE:', 'CODES', "TODAY'S", 'TODAYS', 'ARE:', 'RADIO', 'BELL', 'CENTER', '1909']
+EXCEPTIONS = ['SPORTSNET', 'CODE', 'CODE:', 'CODES', "TODAY'S", 'TODAYS', 'ARE:', 'RADIO', 'BELL', 'CENTER', '1909']
 
 
 def clean_input(i):
@@ -45,10 +45,9 @@ def wait_for_element(driver, selector, timer=10, poll_frequency=0.5):
     Stop script if time is out.
     """
     try:
-        check = WebDriverWait(driver, timer, poll_frequency).until\
-            (EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
+        WebDriverWait(driver, timer, poll_frequency).until(EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
     except TimeoutException:
-        print('Crucial element has not been located on the page. Stopping script execution.')
+        print('Crucial element "%s" has not been located on the page. Stopping script execution.' % selector)
         driver.close()
         sys.exit()
 
@@ -68,14 +67,14 @@ def parse_tweets(consumer_key, consumer_secret, access_key, access_secret):
     # How query is built: https://dev.twitter.com/rest/public/search
     date = datetime.datetime.today().strftime('%Y-%m-%d')    # Codes expire in one day, so we have to use today's date
     query = 'https://api.twitter.com/1.1/search/tweets.json?' + \
-            'q=from%3ACodesClub1909' + '%20%27codes%20are%27' + '%20since%3A' + date
+            'q=from%3ACodesClub1909' + '%20%27code%27' + '%20since%3A' + '2017-09-10'
     # Query results stored in json format.
     timeline = twitter.get(query)
-    # Tweets that sum up codes for a day usually have words 'codes are' in their text.
+    # Tweets that sum up codes for a day usually have words 'today' in their text.
     # We can use that to filter out irrelevant tweets.
     # We will also clean up tweet's text on the fly using clean_input function.
     if timeline['statuses']:
-        tweets = [clean_input(t['text']) for t in timeline['statuses'] if 'CODES ARE' in t['text'].upper()]
+        tweets = [clean_input(t['text']) for t in timeline['statuses'] if 'TODAY' in t['text'].upper()]
     else:
         print('Query request returned no results. There might be no tweets in specified time frame.')
         sys.exit()
@@ -114,9 +113,9 @@ def submit_codes(codes, user, password, phantomjs_loc):
     driver.find_element_by_name('password').send_keys(password)
     driver.find_element_by_css_selector('button.btn').click()       # login button
     # Wait for site's content to load. It may take a while, so we will use 20 seconds for wait timer.
-    wait_for_element(driver, '#ctl00_CntMainBody_ctl11_VoucherCodeTextBox', timer=20)
-    submit_window = driver.find_element_by_css_selector('#ctl00_CntMainBody_ctl11_VoucherCodeTextBox')
-    submit_button = driver.find_element_by_css_selector('#ctl00_CntMainBody_ctl11_ProcessVoucherCodeLinkButton')
+    wait_for_element(driver, '#ctl00_CntMainBody_ctl07_VoucherCodeTextBox', timer=20)
+    submit_window = driver.find_element_by_css_selector('#ctl00_CntMainBody_ctl07_VoucherCodeTextBox')
+    submit_button = driver.find_element_by_css_selector('#ctl00_CntMainBody_ctl07_ProcessVoucherCodeLinkButton')
     # Loop over codes to submit them to the form.
     for code in codes:
         submit_window.send_keys(code)
