@@ -67,7 +67,7 @@ def parse_tweets(consumer_key, consumer_secret, access_key, access_secret):
     # How query is built: https://dev.twitter.com/rest/public/search
     date = datetime.datetime.today().strftime('%Y-%m-%d')    # Codes expire in one day, so we have to use today's date
     query = 'https://api.twitter.com/1.1/search/tweets.json?' + \
-            'q=from%3ACodesClub1909' + '%20%27code%27' + '%20since%3A' + '2017-09-10'
+            'q=from%3ACodesClub1909' + '%20%27code%27' + '%20since%3A' + date
     # Query results stored in json format.
     timeline = twitter.get(query)
     # Tweets that sum up codes for a day usually have words 'today' in their text.
